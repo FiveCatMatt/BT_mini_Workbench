@@ -1,0 +1,81 @@
+#include "FastLED.h"
+#define DATA_PIN    6
+#define LED_TYPE    WS2812
+#define COLOR_ORDER GRB
+#define NUM_LEDS    10
+CRGB leds[NUM_LEDS];
+
+#define BRIGHTNESS 20
+
+int stepCount = 0;
+int redRGB[11] = {};
+int blueRGB[11];
+int greenRGB[11];
+
+void stepUp()
+{
+  redRGB[stepCount]++;
+
+  if (redRGB[stepCount] == 255)
+  {
+    redRGB[stepCount] = 0;
+    greenRGB[stepCount]++;
+    if (greenRGB[stepCount] == 255)
+    {
+      greenRGB[stepCount] = 0;
+      blueRGB[stepCount]++;
+      if (blueRGB[stepCount] == 255)
+      {
+        blueRGB[stepCount] = 0;
+      }
+    }
+  }
+  stepCount++;
+  if (stepCount > NUM_LEDS)
+    stepCount = 0;
+}
+
+void lightLED()
+{
+  //CRGB(redRGB[stepCount], greenRGB[stepCount], blueRGB[stepCount]);
+  //setPixel(stepCount, redRGB[stepCount], greenRGB[stepCount], blueRGB[stepCount]);
+  leds[stepCount].r = redRGB[stepCount];
+  leds[stepCount].g = greenRGB[stepCount];
+  leds[stepCount].b = blueRGB[stepCount];
+  FastLED.show();
+}
+
+void setup()
+{
+  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.setBrightness(BRIGHTNESS);
+
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    redRGB[i] = 0;
+    greenRGB[i] = 0;
+    blueRGB[i] = 0;
+  }
+
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  stepUp();
+  lightLED();
+  Serial.print(stepCount);
+  Serial.print(": ");
+  Serial.print(redRGB[stepCount]);
+  Serial.print(", ");
+  Serial.print(greenRGB[stepCount]);
+  Serial.print(", ");
+  Serial.print(blueRGB[stepCount]);
+  Serial.println(" ");
+
+  Serial.println("Blue RGB: ");
+  Serial.println(blueRGB[stepCount]);
+
+  //delay(100);
+
+}
